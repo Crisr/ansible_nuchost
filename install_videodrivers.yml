@@ -1,0 +1,15 @@
+---
+
+- hosts: all
+  become: true
+  tasks:
+
+  - name: add mesa repo
+    apt_repository:
+      repo: 'ppa:kisak/kisak-mesa'
+
+  - name: apt update
+    apt:
+      update-cache: true
+      
+  
