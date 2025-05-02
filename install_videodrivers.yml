@@ -4,21 +4,18 @@
   become: true
   tasks:
 
-    - name: apt update
-      apt:
-        update-cache: true
+#    - name: apt update
+#      apt:
+#        update-cache: true
+# moved down in the same operation
         
     - name: add graphics packages and utils
       apt:
-        pkg:
+        name:
           - software-properties-common
           - mesa-utils
-          - vanilla-gnome-desktop
-          - vanilla-gnome-default-settings
-        
-    - name: apt update
-      apt:
-        update-cache: true
+      update-cache: true
+      when: ansible_distribution in ["Debian", "Ubuntu"]
 
 #    - name: add mesa repo
 #      apt_repository:
