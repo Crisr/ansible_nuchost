@@ -4,12 +4,26 @@
   become: true
   tasks:
 
-  - name: add mesa repo
-    apt_repository:
-      repo: 'ppa:kisak/kisak-mesa'
+    - name: apt update
+      apt:
+        update-cache: true
+        
+    - name: add graphics packages and utils
+      apt:
+        pkg:
+          - software-properties-common
+          - mesa-utils
+          - vanilla-gnome-desktop
+          - vanilla-gnome-default-settings
+        
+    - name: apt update
+      apt:
+        update-cache: true
 
-  - name: apt update
-    apt:
-      update-cache: true
-      
-  
+#    - name: add mesa repo
+#      apt_repository:
+#        repo: ppa:kisak/kisak-mesa    
+
+#    - name: apt update
+#      apt:
+#        update-cache: true
