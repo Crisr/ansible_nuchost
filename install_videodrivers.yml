@@ -4,17 +4,17 @@
   become: true
   tasks:
 
-#    - name: apt update
-#      apt:
-#        update-cache: true
-# moved down in the same operation
+    - name: Update and upgrade apt packages
+      apt:
+        update-cache: yes
+        state: latest
+        upgrade: dist
         
-    - name: add graphics packages and utils
+    - name: Install required software
       apt:
         name:
           - software-properties-common
           - mesa-utils
-      update-cache: true
       when: ansible_distribution in ["Debian", "Ubuntu"]
 
 #    - name: add mesa repo
