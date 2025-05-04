@@ -1,41 +1,111 @@
+#SPDX-License-Identifier: MIT-0
 ---
-- name: Ensure apt is using HTTPS
+# tasks file for dockerce
+- name: Remove docker-related packages
   ansible.builtin.apt:
-    name: "{{ item }}"
-    state: present
-  loop:
-    - apt-transport-https
-    - ca-certificates
-    - curl
-    - software-properties-common
+    pkg:
+      - docker.io
+      - docker-doc
+      - docker-compose
+      - docker-compose-v2
+      - podman-docker
+      - containerd
+      - runc
+    state: absent
+  tags:
+    - install
 
-- name: Add Docker GPG key
-  ansible.builtin.apt_key:
-    url: "https://download.docker.com/linux/ubuntu/gpg"
-    state: present
+- name: Install samba dependcies, net tools
+  ansible.builtin.apt:
+    pkg:
+      - cifs-utils
+      - net-tools
+    update_cache: yes
+  tags:
+    - install
 
-- name: Add Docker repository
+- name: Install repository dependencies
+  ansible.builtin.apt:
+    pkg:
+      - ca-certificates
+      - curl
+    update_cache: yes
+  tags:
+    - install
+
+- name: Create a keyring-directory if it does not exist
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+  tags:
+    - install
+
+- name: Download docker-keys
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: '0444'
+  tags:
+    - install
+
+- name: Add specified docker repository into sources list
   ansible.builtin.apt_repository:
-    repo: "{{ docker_apt_repository }}"
+    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable"
     state: present
+  tags:
+    - install
 
-- name: Install Docker CE
+- name: Install docker-ce packages
   ansible.builtin.apt:
-    name: docker-ce
-    state: present
-    update_cache: true
+    pkg:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+  tags:
+    - install
 
-- name: Configure Docker daemon options
-  ansible.builtin.template:
-    src: "templates/docker_daemon.json.j2"
-    dest: "/etc/docker/daemon.json"
-    owner: 'root'
-    group: 'root'
-    mode: '0755'  # Optional file permissions
-  notify: Restart Docker
 
-- name: Ensure Docker service is enabled and running
-  ansible.builtin.systemd:
-    name: docker
-    enabled: true
-    state: started
+#---
+#- name: Ensure apt is using HTTPS
+#  ansible.builtin.apt:
+#    name: "{{ item }}"
+#    state: present
+#  loop:
+#    - apt-transport-https
+#    - ca-certificates
+#    - curl
+#    - software-properties-common
+#
+#- name: Add Docker GPG key
+#  ansible.builtin.apt_key:
+#    url: "https://download.docker.com/linux/ubuntu/gpg"
+#    state: present
+#
+#- name: Add Docker repository
+#  ansible.builtin.apt_repository:
+#    repo: "{{ docker_apt_repository }}"
+#    state: present
+#
+#- name: Install Docker CE
+#  ansible.builtin.apt:
+#    name: docker-ce
+#    state: present
+#    update_cache: true
+#
+#- name: Configure Docker daemon options
+#  ansible.builtin.template:
+#    src: "templates/docker_daemon.json.j2"
+#    dest: "/etc/docker/daemon.json"
+#    owner: 'root'
+#    group: 'root'
+#    mode: '0755'  # Optional file permissions
+#  notify: Restart Docker
+#
+#- name: Ensure Docker service is enabled and running
+#  ansible.builtin.systemd:
+#    name: docker
+#    enabled: true
+#    state: started
